@@ -1,0 +1,19 @@
+﻿@page "/"
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<h3>Let's Get Started!</h3>
+
+<h4>Not signed up yet? Create an account <a href="identity/account/register">Here!</a></h4>
+<h4>Or log in <a href="identity/account/Logon">Here</a></h4>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthenticationStateProvider.IsLoggedInAsync())
+            NavigationManager.NavigateTo("member/gifts");
+    }
+}

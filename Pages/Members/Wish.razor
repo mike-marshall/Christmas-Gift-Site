@@ -1,0 +1,73 @@
+﻿@page "/member/newgift"
+@attribute [Authorize]
+
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IGiftRegistry GiftRegistry
+
+<h3>Add to Wishlist</h3>
+
+<EditForm Model="@giftRequest" OnValidSubmit="@HandleValidSubmit">
+
+    @if (giftRequest != null)
+    {
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="giftName">Name</label><br />
+            <InputText id="giftName" @bind-Value="giftRequest.ShortName" /><br />
+        </div>
+
+        <div class="form-group">
+            <label for="giftDesc">Description</label><br />
+            <InputText id="giftDesc" @bind-Value="giftRequest.Description" /><br />
+        </div>
+
+        <div class="form-group">
+            <label for="giftLink">Web link (optional)</label><br />
+            <InputText id="giftLink" @bind-Value="giftRequest.ProductURL" /><br />
+        </div>
+
+        <button type="submit">Submit</button>
+    }
+</EditForm>
+
+@code {
+    GiftRequest giftRequest = new GiftRequest();
+
+    private async void HandleValidSubmit()
+    {
+        giftRequest.Id = Guid.NewGuid().ToString();
+
+
+        try
+        {
+            ProductImage img = await ProductInfo.GetProductThumbnailBase64Async(giftRequest.ProductURL);
+
+            if (null != img)
+            {
+                giftRequest.Base64Thumbnail = img.Base64Data;
+                giftRequest.ThumbnailMimeType = img.MimeType;
+            }
+
+            AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            var user = state.User;
+            giftRequest.MemberID = user.Identity.Name;
+
+            if (user.Identity.IsAuthenticated)
+            {
+                await GiftRegistry.CreateGiftRequestAsync(giftRequest);
+                NavigationManager.NavigateTo("member/gifts");
+            }
+        }
+        catch (Exception)
+        {
+            // TODO error handling
+        }
+    }
+}

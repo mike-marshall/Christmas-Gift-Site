@@ -1,0 +1,399 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+app {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-row {
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.main {
+    flex: 1;
+}
+
+    .main .top-row {
+        background-color: #f7f7f7;
+        border-bottom: 1px solid #d6d5d5;
+        justify-content: flex-end;
+    }
+
+        .main .top-row > a, .main .top-row .btn-link {
+            white-space: nowrap;
+            margin-left: 1.5rem;
+        }
+
+.main .top-row a:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar {
+    background-color: darkgreen;
+}
+
+    .sidebar .top-row {
+        background-color: white;
+    }
+
+    .sidebar .navbar-brand {
+        font-size: 1.1rem;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .navbar-brand > i {
+        margin-right: 4px;
+    }
+
+    .sidebar .oi {
+        width: 2rem;
+        font-size: 1.1rem;
+        vertical-align: text-top;
+        top: -2px;
+    }
+
+    .sidebar .nav-item {
+        font-size: 0.9rem;
+        padding-bottom: 0.5rem;
+    }
+
+        .sidebar .nav-item:first-of-type {
+            padding-top: 1rem;
+        }
+
+        .sidebar .nav-item:last-of-type {
+            padding-bottom: 1rem;
+        }
+
+        .sidebar .nav-item a {
+            color: #d7d7d7;
+            border-radius: 4px;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            line-height: 3rem;
+        }
+
+            .sidebar .nav-item a.active {
+                background-color: rgba(255,255,255,0.25);
+                color: white;
+            }
+
+            .sidebar .nav-item a:hover {
+                background-color: rgba(255,255,255,0.1);
+                color: white;
+            }
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.navbar-toggler {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-toggler-icon {
+    color: darkgreen !important;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+#logo {
+    width: 100%;
+    
+}
+
+.validation-message {
+    color: red;
+}
+
+#createIcon {
+    color: red;
+    margin-right: 0.5rem;
+    margin-top: 2rem;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.cards {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-gap: 1rem;
+}
+
+.navbar-dark {
+    color: darkgreen !important;
+}
+
+.custom-toggler .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 100, 0, 0.7)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+}
+
+.custom-toggler.navbar-toggler {
+    border-color: rgb(0,100,0);
+} 
+
+.navbar-dark .navbar-toggler {
+    color: rgba(0,100,0,.5) !important;
+    border-color: rgba(255,255,255,.1);
+}
+
+#giftMenu {
+    margin-right: 1.1rem;
+}
+
+.card {
+    background-color: green;
+    color: white;
+    padding: 0.5rem;
+    height: 4.5rem;
+}
+
+.card-0{
+    background-color:red !important;
+}
+
+.card-1 {
+    background-color: green !important
+        ;
+}
+
+.card div img {
+    height: 4rem;
+    width: 4rem;
+}
+
+.card-content {
+    display:inline-block;
+    width:25%;
+}
+
+.flex-container {
+    display: flex;
+}
+
+.flex-child {
+    flex: 1;
+}
+.flex-comment {
+    flex: 10;
+}
+.flex-label {
+    flex: 3;    
+    text-decoration:none;
+    cursor:pointer !important;
+}
+div.flex-label > a {
+    text-decoration: none !important;
+    color: white !important;
+    cursor: pointer !important;
+}
+
+.item-btns {
+    text-align: right;
+    padding-left: 7px;
+    padding-bottom: 5px;
+}
+
+div.item-btns > a {
+    color:white;
+}
+
+
+.fa-edit, .fa-minus-circle {
+    cursor: pointer;
+    text-decoration:none;
+    color: white;
+}
+
+.fa-amazon, .fa-external-link-alt {
+    margin-left: 4px;
+}
+
+.small-inst {
+    font-size: 0.6em;
+    margin-bottom: 2px;
+    padding: 0px;
+}
+
+.reserve-btn {
+    margin-left:10px;
+}
+
+i.fa-circle {
+    margin-left:7px;
+}
+
+i.fa-circle:hover {
+    color:green ;
+}
+
+i.fa-check-circle:hover {
+    color: green;
+    cursor: pointer;
+}
+
+.flex-child:first-child {
+    margin-right: 20px;
+} 
+
+.req-desc {
+    font-size: 0.75em;
+    font-style: italic;       
+}
+
+div.flex-label > a > span {
+    text-decoration: underline;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.img-container {
+    position: relative;
+    height: 25%; /* The size you want */
+    width: 25%;
+}
+
+.img-container:after {
+    content: "";
+    display: block;
+    padding-bottom: 100%; /* The padding depends on the width, not on the height, so with a padding-bottom of 100% you will get a square */
+}
+
+.img-container img {
+    position: absolute; /* Take your picture out of the flow */
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0; /* Make the picture taking the size of it's parent */
+    width: 100%; /* This if for the object-fit */
+    height: 100%; /* This if for the object-fit */
+    object-fit: cover; /* Equivalent of the background-size: cover; of a background-image */
+    object-position: center;
+}
+
+.modal-content > span {
+    margin-top: 5px;
+}
+
+.tab
+{
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    width:max-content;
+    padding: 0 4px 0 4px;
+    background-color:antiquewhite;
+    color:black;
+}
+
+
+@media (min-width: 600px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+
+
+@media (max-width: 767.98px) {
+    .main .top-row:not(.auth) {
+        display: none;
+    }
+
+    .main .top-row.auth {
+        justify-content: space-between;
+    }
+
+    .main .top-row a, .main .top-row .btn-link {
+        margin-left: 0;
+    }
+
+    #logo {
+        height:45px;
+        width:auto;
+    }
+}
+
+@media (min-width: 768px) {
+    app {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .main .top-row {
+        position: sticky;
+        top: 0;
+    }
+
+    .main > div {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+
+    .navbar-toggler {
+        display: none;
+    }
+
+    .sidebar .collapse {
+        /* Never collapse the sidebar for wide screens */
+        display: block;
+    }
+}

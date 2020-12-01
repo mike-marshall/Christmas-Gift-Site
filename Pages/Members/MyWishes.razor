@@ -1,0 +1,121 @@
+﻿@page "/member/gifts"
+@attribute [Authorize]
+
+@using PolarExpress3; 
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IGiftRegistry GiftRegistry
+
+    <i id="createIcon" class="fa fas fa-gift fa-3x"></i>
+    <a href="member/newgift" class="btn btn-primary btn-lg">Add to My Wish List</a>
+    <p></p>
+    @if (Requests != null)
+    {
+       <GiftList 
+            CanReserve="false" 
+            CanEdit="true" 
+            Requests="Requests" 
+            Title="My Wish List"
+            OnDelete="DeleteItem">
+            
+       </GiftList>
+    }
+
+@if (Confirm)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog shadow-lg p-3 mb-5">
+            <div class="modal-content">
+                <h4>Delete this item?</h4>
+                <div class="card">
+                    <div class="flex-container">
+                        <div class="flex-child"><img class="thumbnail" src="data:image/jpeg;base64,@(CurrentRequest?.Base64Thumbnail ?? "")" /></div>
+                        <div class="flex-label">
+                            <span>@(CurrentRequest?.ShortName ?? "")</span>
+                            @if (!String.IsNullOrWhiteSpace(CurrentRequest?.Base64Thumbnail ?? ""))
+                            {
+                                <i class="fab fa-amazon"></i>
+                            }
+                            <div class="flex-container">
+                                <div class="flex-child">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="req-desc flex-comment">
+                                    &quot;@(CurrentRequest?.Description ?? "")&quot;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <span>
+                    <button class="btn btn-success" @onclick="OnConfirmed">Confirm</button>
+                    <button class="btn btn-danger" @onclick="OnCancel">Cancel</button>
+                </span>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    public List<GiftRequest> Requests;
+    public bool Confirm;
+    GiftRequest CurrentRequest;
+    private string _userName;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (null == Requests)
+        {
+            _userName = await AuthenticationStateProvider.GetUserNameAsync();
+            Requests = GiftRegistry.GetMemberRequests(_userName);
+        }
+    }
+
+    async void DeleteItem(string giftId)
+    {
+        try
+        {                        
+            CurrentRequest = await GiftRegistry.GetRequestAsync(giftId, _userName);
+
+            if (null != CurrentRequest)
+            {                
+                this.Confirm = true;
+                StateHasChanged();                
+            }
+            else
+            {
+                this.Confirm = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            // TODO
+        }
+    }
+
+    async void OnConfirmed()
+    {
+        if (null != CurrentRequest)
+        {
+            string userName = await AuthenticationStateProvider.GetUserNameAsync();
+            GiftRegistry.DeleteGiftRequest(CurrentRequest.Id, userName);
+
+            Requests = GiftRegistry.GetReservedGifts(userName);
+
+            StateHasChanged();
+        }
+
+        CurrentRequest = null;
+        Confirm = false;
+        StateHasChanged();
+    }
+
+    void OnCancel()
+    {
+        CurrentRequest = null;
+        Confirm = false;
+        StateHasChanged();
+    }
+}

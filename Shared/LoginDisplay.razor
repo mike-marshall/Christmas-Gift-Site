@@ -1,0 +1,40 @@
+﻿@using PolarExpress3.Data;
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<AppUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<AuthorizeView>
+    <Authorized>        
+        <a href="Identity/Account/Manage">Hello, @(FirstName)!</a>
+        <form method="post" action="Identity/Account/LogOut">
+            <button type="submit" class="nav-link btn btn-link">Log out</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <a href="Identity/Account/Register">Register</a>
+        <a href="Identity/Account/Login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    private string FirstName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var appUser = await UserManager.GetUserAsync(user);
+            FirstName = appUser.FirstName;
+        }
+        else
+        {
+            FirstName = "";
+        }
+    }
+}

@@ -1,0 +1,142 @@
+﻿@page "/member/others"
+@attribute [Authorize]
+
+@using PolarExpress3;
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IGiftRegistry GiftRegistry
+
+<div class="form-control form-control-lg">
+    @if (null != Others)
+    {
+        <select @onchange="OnMemberChanged">
+            @foreach (FamilyMember other in Others)
+            {
+                <option value="@other.Id">@other.FirstName</option>
+            }
+        </select>
+    }
+</div>
+
+@if (Requests != null)
+{
+    <GiftList @ref="RequestList"
+              @bind-Title="TitleText"
+              CanReserve="true"
+              CanEdit="false"
+              @bind-Requests="Requests"
+              OnReserve="OnReserveRequest">
+
+    </GiftList>
+}
+
+@if (Confirm)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog shadow-lg p-3 mb-5 bg-light">
+            <div class="modal-content">
+                <h4>Reserve this item?</h4>
+                <div class="card">
+                    <div class="flex-container">
+                        <div class="flex-child"><img class="thumbnail" src="data:image/jpeg;base64,@CurrentRequest.Base64Thumbnail" /></div>
+                        <div class="flex-label">
+                            <span>@CurrentRequest.ShortName</span>
+                            @if (!String.IsNullOrWhiteSpace(CurrentRequest.Base64Thumbnail))
+                            {
+                                <i class="fab fa-amazon"></i>
+                            }
+                            <div class="flex-container">
+                                <div class="flex-child">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="req-desc flex-comment">
+                                    &quot;@CurrentRequest.Description&quot;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <span>
+                    <button class="btn btn-success" @onclick="OnConfirmed">Confirm</button>
+                    <button class="btn btn-danger" @onclick="OnCancel">Cancel</button>
+                </span>
+            </div>
+    </div>
+    </div>
+}
+
+@code {
+    public List<GiftRequest> Requests;
+    public List<FamilyMember> Others;
+    public FamilyMember CurrentMember;
+    public string TitleText;
+    public GiftList RequestList;
+    public bool Confirm;
+    public GiftRequest CurrentRequest;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (null == Others)
+        {
+            string userEmail = await AuthenticationStateProvider.GetUserNameAsync();
+            Others = GiftRegistry.GetFamilyMembersAsync(userEmail);
+            CurrentMember = Others[0];
+            Requests = GiftRegistry.GetMemberRequests(CurrentMember.Email, false);
+            TitleText = (CurrentMember != null ? $"{CurrentMember.FirstName}'s List" : "List");
+        }
+    }
+
+    async void OnMemberChanged(ChangeEventArgs args)
+    {
+        CurrentMember = await GiftRegistry.GetMemberAsync(args.Value.ToString());
+        Requests = GiftRegistry.GetMemberRequests(CurrentMember.Email, false);
+        TitleText = (CurrentMember != null ? $"{CurrentMember.FirstName}'s List" : "List");
+        StateHasChanged();
+    }
+
+    async void OnReserveRequest(string reqID)
+    {
+        try
+        {
+            CurrentRequest = await GiftRegistry.GetRequestAsync(reqID, CurrentMember.Email);
+
+            if (null != CurrentRequest)
+            {
+                Confirm = true;
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            // TODO
+        }
+    }
+
+    async void OnConfirmed()
+    {
+        if (null != CurrentRequest)
+        {
+            AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            CurrentRequest.GiverId = user.Identity.Name;
+
+            await GiftRegistry.UpdateRequestAsync(CurrentRequest);
+
+            Requests = GiftRegistry.GetMemberRequests(CurrentMember.Email, false);
+            StateHasChanged();
+        }
+
+        CurrentRequest = null;
+        Confirm = false;
+        StateHasChanged();
+    }
+
+    void OnCancel()
+    {        
+        CurrentRequest = null;
+        Confirm = false;
+        StateHasChanged();
+    }
+}

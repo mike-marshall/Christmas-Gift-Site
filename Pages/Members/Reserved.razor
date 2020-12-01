@@ -1,0 +1,119 @@
+﻿@page "/member/reserved"
+@attribute [Authorize]
+
+@using PolarExpress3;
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IGiftRegistry GiftRegistry
+
+@if (Requests != null && NameMap != null)
+{
+    <GiftList 
+        CanReserve="true" 
+        CanEdit="false" 
+        Requests="Requests" 
+        Title="My Reserved Gifts"
+        OnUnreserve="OnUnreserve"
+        Tabs="true"
+        Map="NameMap">
+    </GiftList>
+}
+
+@if (Confirm)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog shadow-lg p-3 mb-5">
+            <div class="modal-content">
+                <h4>Return this item?</h4>
+                <div class="card">
+                    <div class="flex-container">
+                        <div class="flex-child"><img class="thumbnail" src="data:image/jpeg;base64,@CurrentRequest.Base64Thumbnail" /></div>
+                        <div class="flex-label">
+                            <span>@CurrentRequest.ShortName</span>
+                            @if (!String.IsNullOrWhiteSpace(CurrentRequest.Base64Thumbnail))
+                            {
+                                <i class="fab fa-amazon"></i>
+                            }
+                            <div class="flex-container">
+                                <div class="flex-child">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="req-desc flex-comment">
+                                    &quot;@CurrentRequest.Description&quot;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <span>
+                    <button class="btn btn-success" @onclick="OnConfirmed">Confirm</button>
+                    <button class="btn btn-danger" @onclick="OnCancel">Cancel</button>
+                </span>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    public List<GiftRequest> Requests;
+    public bool Confirm;
+    GiftRequest CurrentRequest;
+    Dictionary<string, string> NameMap;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (null == Requests)
+        {
+            string userName = await AuthenticationStateProvider.GetUserNameAsync();
+            Requests = GiftRegistry.GetReservedGifts(userName);
+            NameMap = GiftRegistry.GetMemberMap();
+            StateHasChanged();
+        }
+    }
+
+    async void OnUnreserve(UnreserveEvent ureq)
+    {
+        try
+        {
+            CurrentRequest = await GiftRegistry.GetRequestAsync(ureq.RequestID, ureq.Email);
+
+            if (null != CurrentRequest)
+            {
+                Confirm = true;
+                StateHasChanged();
+            }
+        }
+        catch (Exception)
+        {
+            // TODO
+        }
+    }
+
+    async void OnConfirmed()
+    {
+        if (null != CurrentRequest)
+        {            
+            CurrentRequest.GiverId = null;
+
+            await GiftRegistry.UpdateRequestAsync(CurrentRequest);
+
+            string userName = await AuthenticationStateProvider.GetUserNameAsync();
+            Requests = GiftRegistry.GetReservedGifts(userName);
+
+            StateHasChanged();
+        }
+
+        CurrentRequest = null;
+        Confirm = false;
+        StateHasChanged();
+    }
+
+    void OnCancel()
+    {
+        CurrentRequest = null;
+        Confirm = false;
+        StateHasChanged();
+    }
+}

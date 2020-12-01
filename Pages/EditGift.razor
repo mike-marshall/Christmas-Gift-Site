@@ -1,0 +1,79 @@
+﻿@page "/member/gifts/{giftID}"
+@attribute [Authorize]
+
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IGiftRegistry GiftRegistry
+
+<h3>Add to Wishlist</h3>
+
+<EditForm Model="@giftRequest" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="giftName">Name</label><br />
+        <InputText id="giftName" @bind-Value="giftRequest.ShortName" /><br />
+    </div>
+
+    <div class="form-group">
+        <label for="giftDesc">Description</label><br />
+        <InputText id="giftDesc" @bind-Value="giftRequest.Description" /><br />
+    </div>
+
+    <div class="form-group">
+        <label for="giftLink">Web link (optional)</label><br />
+        <InputText id="giftLink" @bind-Value="giftRequest.ProductURL" /><br />
+    </div>    
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+        GiftRequest giftRequest = new GiftRequest();
+
+        [Parameter]
+        public string giftID { get; set; }
+
+        protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = state.User;
+        string email = user.Identity.Name;
+
+        giftRequest = await GiftRegistry.GetRequestAsync(giftID, email);
+    }
+
+    private async void HandleValidSubmit()
+    {
+
+        try
+        {
+            ProductImage image = await ProductInfo.GetProductThumbnailBase64Async(giftRequest.ProductURL);
+
+            if (image != null)
+            {
+                giftRequest.Base64Thumbnail = image.Base64Data;
+                giftRequest.ThumbnailMimeType = image.MimeType;
+            }
+
+            AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            var user = state.User;
+            giftRequest.MemberID = user.Identity.Name;
+
+            if (user.Identity.IsAuthenticated)
+            {
+                await GiftRegistry.UpdateRequestAsync(giftRequest);
+            }
+        }
+        catch (Exception)
+        {
+            // TODO error handling
+        }
+    }
+}
+

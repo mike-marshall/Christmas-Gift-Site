@@ -1,0 +1,135 @@
+﻿@using PolarExpress3.Data;
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h2>@Title</h2>
+
+<div class="cards">
+    @{int count = 0;}  
+    @foreach (GiftRequest req in Requests)
+    {
+    <div>
+        @if (Tabs)
+        {            
+            string name = Map[req.MemberID];
+            
+            <div class="tab">@name</div>
+        }
+        <div class="card card-@(count++%2)">
+            <div class="flex-container">
+                <div class="flex-child"><img class="thumbnail" src="data:@req.ThumbnailMimeType;base64,@req.Base64Thumbnail" /></div>
+                <div class="flex-label">
+                    <a href="@req.ProductURL" target="_blank">
+                        <span>@req.ShortName</span>
+                        @if (!String.IsNullOrWhiteSpace(@req.Base64Thumbnail))
+                        {
+                            <i class="fab fa-amazon"></i>
+                        }
+                        else if (!String.IsNullOrWhiteSpace(@req.ProductURL))
+                        {
+                            <i class="fas fa-external-link-alt"></i>
+                        }
+                    </a>
+                    <div class="flex-container">
+                        <div class="flex-child">
+                            <i class="fas fa-comment"></i>
+                        </div>
+                        <div class="req-desc flex-comment">
+                            &quot;@req.Description&quot;
+                        </div>
+                    </div>
+                </div>
+
+                @if (CanReserve)
+                {
+                    if (IsMyReservation(req))
+                    {
+                        <div class="flex-child"><div @onclick="@(e => OnUnreserve.InvokeAsync(new UnreserveEvent { RequestID = req.Id, Email = req.MemberID }))" class="reserve-btn"><p class="small-inst">UNRESERVE</p><i class="@GetButtonClass(req)"></i></div></div>
+                    }
+                    else
+                    {
+                        <div class="flex-child"><div @onclick="@(e => OnReserveClick(req.Id))" class="reserve-btn"><p class="small-inst">RESERVE</p><i class="@GetButtonClass(req)"></i></div></div>
+                    }
+                }
+                else
+                {
+                    if (CanEdit)
+                    {
+                        <div class="flex-child item-btns">
+                            <a href="/member/gifts/@req.Id"><i title="Edit" class="far fa-edit"></i></a><p/>
+                            <span @onclick="@(e=> OnDeleteItem(req.Id))"><i title="Delete" class="fas fa-minus-circle"></i></span>               
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    }
+
+</div>
+
+
+@code {
+
+    private string _userName;
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public List<GiftRequest> Requests { get; set; }
+
+    [Parameter]
+    public bool CanReserve { get; set; }
+
+    [Parameter]
+    public bool CanEdit { get; set; }
+
+
+    [Parameter]
+    public bool Tabs { get; set; }
+
+    [Parameter]
+    public Dictionary<string, string> Map { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnReserve { get; set; }
+
+    [Parameter]
+    public EventCallback<UnreserveEvent> OnUnreserve { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback<string> TitleChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<List<GiftRequest>> RequestsChanged { get; set; }
+
+    void OnReserveClick(string reqID)
+    {
+        OnReserve.InvokeAsync(reqID);
+    }
+
+    void OnDeleteItem(string reqID)
+    {
+        OnDelete.InvokeAsync(reqID);
+    }
+
+    string GetButtonClass(GiftRequest req)
+    {
+        return String.IsNullOrWhiteSpace(req.GiverId) ? "far fa-circle fa-2x" : "far fa-check-circle fa-2x";
+    }
+
+    public bool IsMyReservation(GiftRequest req)
+    {
+        if (String.IsNullOrEmpty(_userName))
+        {
+            _userName = AuthenticationStateProvider.GetUserNameAsync().Result;
+        }
+
+        return (String.Compare(req.GiverId, _userName, true) == 0);
+    }
+}
