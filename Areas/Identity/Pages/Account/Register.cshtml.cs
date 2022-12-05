@@ -91,7 +91,7 @@ namespace PolarExpress3.Areas.Identity.Pages.Account
                         {
                             FirstName = Input.FirstName,
                             Email = Input.Email,
-                            FamilyID = "test1",
+                            FamilyID = "togo",
                             Id = Input.Email                             
                         }
                     );

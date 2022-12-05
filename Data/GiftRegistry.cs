@@ -10,7 +10,7 @@ namespace PolarExpress3.Data
 {
     public interface IGiftRegistry
     {
-        Task<FamilyMember> GetMemberAsync(string email, string familyID = "test1");
+        Task<FamilyMember> GetMemberAsync(string email, string familyID = "togo");
         public List<FamilyMember> GetFamilyMembersAsync(string excludeEmail);
         Task<bool> CreateFamilyAsync(Family family);
         Task<bool> CreateMemberAsync(FamilyMember member);
@@ -59,7 +59,7 @@ namespace PolarExpress3.Data
             var members =
                 from member
                     in _docClient.CreateDocumentQuery<FamilyMember>(_membersUri, new FeedOptions { EnableCrossPartitionQuery = true })
-                        where member.FamilyID == "test1" && member.Email.ToLower() != excludeEmail.ToLower()
+                        where member.FamilyID == "togo" && member.Email.ToLower() != excludeEmail.ToLower()
                             select member;
 
             return members.ToList();
@@ -86,7 +86,7 @@ namespace PolarExpress3.Data
             return true;
         }
 
-        public async Task<FamilyMember> GetMemberAsync(string email, string familyID = "test1")
+        public async Task<FamilyMember> GetMemberAsync(string email, string familyID ="togo")
         {
             ItemResponse<FamilyMember> memberResp = await _members.ReadItemAsync<FamilyMember>(email, new PartitionKey(familyID));
 
