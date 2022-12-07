@@ -3,6 +3,7 @@ using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -106,7 +107,17 @@ namespace PolarExpress3.Data
 
         public async Task<GiftRequest> GetRequestAsync(string giftID, string email)
         {
-            ItemResponse<GiftRequest> memberResp = await _requests.ReadItemAsync<GiftRequest>(giftID, new PartitionKey(email));
+
+            ItemResponse<GiftRequest> memberResp = null;
+
+            try
+            {
+                memberResp = await _requests.ReadItemAsync<GiftRequest>(giftID, new PartitionKey(giftID));
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine($"Failed to get Request: {ex.Message}");
+            }
 
             return memberResp.Resource;
         }
