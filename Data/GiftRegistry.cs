@@ -124,7 +124,7 @@ namespace PolarExpress3.Data
 
         public async Task<bool> UpdateRequestAsync(GiftRequest req)
         {
-            await _requests.ReplaceItemAsync<GiftRequest>(req, req.Id, new PartitionKey(req.MemberID));
+            await _requests.ReplaceItemAsync<GiftRequest>(req, req.Id, new PartitionKey(req.Id));
 
             return true;
         }
