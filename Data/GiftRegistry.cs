@@ -156,7 +156,7 @@ namespace PolarExpress3.Data
 
         public void DeleteGiftRequest(string giftID, string memberEmail)
         {
-            _requests.DeleteItemAsync<GiftRequest>(giftID, new PartitionKey(memberEmail));
+            _requests.DeleteItemAsync<GiftRequest>(giftID, new PartitionKey(giftID));
         }
     }
 }

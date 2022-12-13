@@ -22,7 +22,7 @@
                 <div class="flex-label">
                     <a href="@req.ProductURL" target="_blank">
                         <span>@req.ShortName</span>
-                        @if (!String.IsNullOrWhiteSpace(@req.Base64Thumbnail))
+                        @if (!String.IsNullOrWhiteSpace(req.ProductURL) && req.ProductURL.Contains("amazon"))
                         {
                             <i class="fab fa-amazon"></i>
                         }
