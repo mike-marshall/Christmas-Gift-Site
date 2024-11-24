@@ -1,7 +1,7 @@
 ﻿@page "/member/newfamily"
 @attribute [Authorize]
 
-@using PolarExpress3; 
+@using PolarExpress3;
 @using PolarExpress3.Data
 @using PolarExpress3.Utils;
 @using Microsoft.AspNetCore.Components.Authorization
@@ -40,7 +40,7 @@
 
 
 @code {
-    Family _request = new Family();    
+    Family _request = new Family();
 
     public async void HandleNewFamilySubmit()
     {
@@ -53,7 +53,7 @@
             if (!string.IsNullOrWhiteSpace(userId))
             {
                 await GiftRegistry.AddMemberToFamily(userId, f);
-                NavigationManager.NavigateTo("~/");
+                NavigationManager.NavigateTo("/member/familyconfirm");
             }
         }
     }
@@ -62,7 +62,7 @@
     {
         _request.Id = _request.FamilyID;
         Family f = await GiftRegistry.GetFamilyAsync(_request.FamilyID);
-        
+
         if (f != null)
         {
             string userId = await AuthenticationStateProvider.GetUserNameAsync();

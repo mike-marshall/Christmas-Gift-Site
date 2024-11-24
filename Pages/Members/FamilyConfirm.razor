@@ -1,0 +1,27 @@
+﻿@page "/member/familyconfirm"
+@attribute [Authorize]
+
+@using PolarExpress3;
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IGiftRegistry GiftRegistry
+
+<h2>Group Created</h2>
+
+<h3>To have other people join your group. tell them to register and join the group named <span style="font-family:Courier New, Courier, monospace">@_member.FamilyID</span></h3>
+
+<h3>Start adding to your wish list, click <a href="/member/gifts">Here</a></h3>
+
+@code {
+    FamilyMember _member = new FamilyMember();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        string userEmail = await AuthenticationStateProvider.GetUserNameAsync();
+        _member = await GiftRegistry.GetMemberByUserIdAsync(userEmail);
+    }
+
+}
