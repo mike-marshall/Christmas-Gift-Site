@@ -67,8 +67,9 @@
         if (null == Requests)
         {
             string userName = await AuthenticationStateProvider.GetUserNameAsync();
-            Requests = GiftRegistry.GetReservedGifts(userName);
-            NameMap = GiftRegistry.GetMemberMap();
+            FamilyMember familyMember = await GiftRegistry.GetMemberByUserIdAsync(userName);
+            Requests = await GiftRegistry.GetReservedGiftsAsync(userName);            
+            NameMap = await GiftRegistry.GetMemberMap(familyMember.FamilyID);
             StateHasChanged();
         }
     }
@@ -100,7 +101,7 @@
             await GiftRegistry.UpdateRequestAsync(CurrentRequest);
 
             string userName = await AuthenticationStateProvider.GetUserNameAsync();
-            Requests = GiftRegistry.GetReservedGifts(userName);
+            Requests = await GiftRegistry.GetReservedGiftsAsync(userName);
 
             StateHasChanged();
         }

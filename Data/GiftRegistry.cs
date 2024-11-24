@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -12,17 +13,22 @@ namespace PolarExpress3.Data
     public interface IGiftRegistry
     {
         Task<FamilyMember> GetMemberAsync(string email, string familyID = "togo");
-        public List<FamilyMember> GetFamilyMembersAsync(string excludeEmail);
-        Task<bool> CreateFamilyAsync(Family family);
+        Task<List<FamilyMember>> GetFamilyMembersAsync(string excludeEmail);
+        Task<List<FamilyMember>> GetFamilyMembersAsync(Family targetFamily);
+        Task<Family> CreateFamilyAsync(Family family);
+        Task<Family> GetFamilyAsync(string familyId);
+        Task<FamilyMember> GetMemberByUserIdAsync(string userId);
         Task<bool> CreateMemberAsync(FamilyMember member);
+        Task<bool> AddMemberToFamily(string userId, Family family);
         Task<bool> CreateGiftRequestAsync(GiftRequest request);
         Task<GiftRequest> GetRequestAsync(string giftID, string email);
         Task<bool> UpdateRequestAsync(GiftRequest req);
         List<GiftRequest> GetMemberRequests(string email, bool self = true);
 
-        List<GiftRequest> GetReservedGifts(string giverEmail);
-        Dictionary<string, string> GetMemberMap();
+        Task<List<GiftRequest>> GetReservedGiftsAsync(string giverEmail);
+        Task<Dictionary<string, string>> GetMemberMap(string familyId);
         void DeleteGiftRequest(string giftID, string memberEmail);
+        Task<bool> HasFamily(string userId);
     }
     public class GiftRegistry : IGiftRegistry
     {
@@ -55,24 +61,67 @@ namespace PolarExpress3.Data
             _membersUri = UriFactory.CreateDocumentCollectionUri("PolarExpress", "Members");
             _requestsUri = UriFactory.CreateDocumentCollectionUri("PolarExpress", "Requests");
         }
-        public List<FamilyMember> GetFamilyMembersAsync(string excludeEmail)
+        public async Task<List<FamilyMember>> GetFamilyMembersAsync(string excludeEmail)
         {
+            FamilyMember fm = await GetMemberByUserIdAsync(excludeEmail);
+
+            if (fm == null)
+            {
+                throw new ApplicationException("User does not exist");
+            }
+
             var members =
                 from member
                     in _docClient.CreateDocumentQuery<FamilyMember>(_membersUri, new FeedOptions { EnableCrossPartitionQuery = true })
-                        where member.FamilyID == "togo" && member.Email.ToLower() != excludeEmail.ToLower()
+                        where member.FamilyID == fm.FamilyID && member.Email.ToLower() != excludeEmail.ToLower()
                             select member;
 
             return members.ToList();
         }
 
-        public async Task<bool> CreateFamilyAsync(Family family)
-        {
-            ItemResponse<Family> newFamily = await _families.CreateItemAsync<Family>(family);
+        public async Task<List<FamilyMember>> GetFamilyMembersAsync(Family targetFamily)
+        {            
+            var members =
+                from member
+                    in _docClient.CreateDocumentQuery<FamilyMember>(_membersUri, new FeedOptions { EnableCrossPartitionQuery = true })
+                where member.FamilyID == targetFamily.FamilyID
+                select member;
 
-            return true;
+            return members.ToList();
         }
 
+        public async Task<FamilyMember> GetMemberByUserIdAsync(string userId)
+        {
+            FeedIterator<FamilyMember> feed = _members.GetItemQueryIterator<FamilyMember>(
+               queryText: $"SELECT * from members m WHERE m.id = '{userId}'"
+           );
+
+            while (feed.HasMoreResults)
+            {
+                Microsoft.Azure.Cosmos.FeedResponse<FamilyMember> r = await feed.ReadNextAsync();
+                foreach (FamilyMember m in r.Resource)
+                {
+                    return m;
+                }
+            }
+            return null;
+        }
+
+        public async Task<Family> CreateFamilyAsync(Family family)
+        {
+            family.Id = family.FamilyID;
+            ItemResponse<Family> newFamily = await _families.CreateItemAsync<Family>(family);
+
+            return newFamily.Resource;
+        }
+
+        public async Task<Family> GetFamilyAsync(string familyID)
+        {
+            ItemResponse<Family> resp = await _families.ReadItemAsync<Family>(familyID, new PartitionKey(familyID));
+
+            return resp.Resource;
+        }
+      
         public async Task<bool> CreateMemberAsync(FamilyMember member)
         {
             ItemResponse<FamilyMember> newMember = await _members.CreateItemAsync<FamilyMember>(member);
@@ -92,6 +141,23 @@ namespace PolarExpress3.Data
             ItemResponse<FamilyMember> memberResp = await _members.ReadItemAsync<FamilyMember>(email, new PartitionKey(familyID));
 
             return memberResp.Resource;
+        }
+
+        public async Task<bool> AddMemberToFamily(string email, Family family)
+        {
+            FamilyMember fm = await GetMemberAsync(email, "");
+
+            if (fm != null)
+            { 
+                await _members.DeleteItemAsync<FamilyMember>(fm.Id, new PartitionKey(""));
+
+                fm.FamilyID = family.FamilyID;
+                await CreateMemberAsync(fm);
+
+                return true;
+            }
+
+            return false;
         }
 
         public List<GiftRequest> GetMemberRequests(string email, bool self = true)
@@ -129,7 +195,7 @@ namespace PolarExpress3.Data
             return true;
         }
 
-        public List<GiftRequest> GetReservedGifts(string giverEmail)
+        public async Task<List<GiftRequest>> GetReservedGiftsAsync(string giverEmail)
         {
             var requests =
                 from request
@@ -140,11 +206,12 @@ namespace PolarExpress3.Data
             return requests.ToList();
         }
 
-        public Dictionary<string, string> GetMemberMap()
+        public async Task<Dictionary<string, string>> GetMemberMap(string familyId)
         {
             var result = new Dictionary<string, string>();
 
-            var members = GetFamilyMembersAsync(String.Empty);
+            Family f = await GetFamilyAsync(familyId);
+            var members = await GetFamilyMembersAsync(f);
 
             foreach (FamilyMember mem in members)
             {
@@ -157,6 +224,28 @@ namespace PolarExpress3.Data
         public void DeleteGiftRequest(string giftID, string memberEmail)
         {
             _requests.DeleteItemAsync<GiftRequest>(giftID, new PartitionKey(giftID));
+        }
+
+        public async Task<bool> HasFamily(string userId)
+        {
+            bool result = false;
+
+            FeedIterator<FamilyMember> feed = _members.GetItemQueryIterator<FamilyMember>(
+                queryText: $"SELECT * from members m WHERE m.id = '{userId}'"
+            );
+
+            while (feed.HasMoreResults)
+            {
+                Microsoft.Azure.Cosmos.FeedResponse<FamilyMember> r = await feed.ReadNextAsync();
+                foreach (FamilyMember m in r.Resource)
+                {
+                    if (!string.IsNullOrEmpty(m.FamilyID))
+                    {
+                        result = true; break;
+                    }
+                }
+            }
+            return result;
         }
     }
 }

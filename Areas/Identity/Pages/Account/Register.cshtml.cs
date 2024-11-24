@@ -78,7 +78,7 @@ namespace PolarExpress3.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/member/gifts");
+            returnUrl = returnUrl ?? Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace PolarExpress3.Areas.Identity.Pages.Account
                         {
                             FirstName = Input.FirstName,
                             Email = Input.Email,
-                            FamilyID = "togo",
+                            FamilyID = "",
                             Id = Input.Email                             
                         }
                     );

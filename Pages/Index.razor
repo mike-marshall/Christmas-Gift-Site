@@ -1,8 +1,11 @@
 ﻿@page "/"
 @using PolarExpress3.Utils;
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Extensions.Caching.Memory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IGiftRegistry GiftRegistry
+@inject IMemoryCache MemoryCache
 
 <h3>Let's Get Started!</h3>
 
@@ -14,6 +17,11 @@
     protected override async Task OnInitializedAsync()
     {
         if (await AuthenticationStateProvider.IsLoggedInAsync())
-            NavigationManager.NavigateTo("member/gifts");
+        {            
+            if (await GiftRegistry.HasFamily(await AuthenticationStateProvider.GetUserNameAsync()))
+                NavigationManager.NavigateTo("member/gifts");
+            else
+                NavigationManager.NavigateTo("member/newfamily");
+        }       
     }
 }

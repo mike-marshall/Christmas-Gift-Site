@@ -1,5 +1,5 @@
 ﻿@page "/member/gifts"
-@attribute [Authorize]
+@attribute [Authorize()]
 
 @using PolarExpress3; 
 @using PolarExpress3.Data
@@ -102,7 +102,7 @@
             string userName = await AuthenticationStateProvider.GetUserNameAsync();
             GiftRegistry.DeleteGiftRequest(CurrentRequest.Id, userName);
 
-            Requests = GiftRegistry.GetReservedGifts(userName);
+            Requests = await GiftRegistry.GetReservedGiftsAsync(userName);
 
             StateHasChanged();
         }

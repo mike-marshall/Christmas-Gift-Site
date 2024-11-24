@@ -23,7 +23,7 @@ namespace PolarExpress3.Utils
 
             string mimeType = string.Empty;
             string result = string.Empty;
-            if (!String.IsNullOrWhiteSpace(url) && url.Contains("amazon.com", StringComparison.InvariantCultureIgnoreCase))
+            /*if (!String.IsNullOrWhiteSpace(url) && url.Contains("amazon.com", StringComparison.InvariantCultureIgnoreCase))
             {
                 mimeType = "image/jpeg";
 
@@ -44,7 +44,7 @@ namespace PolarExpress3.Utils
                     result = ImgUtils.CropToBase64Circle(bytes);
                 }
             }
-            else
+            else*/
             {
                 result = Resources.Strings.DefaultGiftIcon;
                 mimeType = "image/png";

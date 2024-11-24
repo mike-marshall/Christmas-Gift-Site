@@ -1,0 +1,77 @@
+﻿@page "/member/newfamily"
+@attribute [Authorize]
+
+@using PolarExpress3; 
+@using PolarExpress3.Data
+@using PolarExpress3.Utils;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IGiftRegistry GiftRegistry
+
+<h2>Create a Group</h2>
+
+<EditForm Model="@_request" OnValidSubmit="@HandleNewFamilySubmit">
+    @if (_request != null)
+    {
+        <h3>If you're starting a new group, enter the name here.  Remember to share this name with others when they join</h3>
+        <div class="form-group">
+            <label for="newFamilyName">Name</label><br />
+            <InputText id="newFamilyName" @bind-Value="_request.FamilyID" /><br />
+        </div>
+
+        <button type="submit">Submit</button>
+    }
+</EditForm>
+<p></p>
+<h2>Join a Group</h2>
+<EditForm Model="@_request" OnValidSubmit="@HandleExistingFamilySubmit">
+    @if (_request != null)
+    {
+        <h3>If someone you know gave you a group name to join, enter it here:</h3>
+        <div class="form-group">
+            <label for="familyName">Name</label><br />
+            <InputText id="familyName" @bind-Value="_request.FamilyID" /><br />
+        </div>
+
+        <button type="submit">Submit</button>
+    }
+</EditForm>
+
+
+@code {
+    Family _request = new Family();    
+
+    public async void HandleNewFamilySubmit()
+    {
+        Family f = await GiftRegistry.CreateFamilyAsync(_request);
+
+        if (f != null)
+        {
+            string userId = await AuthenticationStateProvider.GetUserNameAsync();
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                await GiftRegistry.AddMemberToFamily(userId, f);
+                NavigationManager.NavigateTo("~/");
+            }
+        }
+    }
+
+    public async void HandleExistingFamilySubmit()
+    {
+        _request.Id = _request.FamilyID;
+        Family f = await GiftRegistry.GetFamilyAsync(_request.FamilyID);
+        
+        if (f != null)
+        {
+            string userId = await AuthenticationStateProvider.GetUserNameAsync();
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                await GiftRegistry.AddMemberToFamily(userId, f);
+                NavigationManager.NavigateTo("~/");
+            }
+        }
+    }
+}

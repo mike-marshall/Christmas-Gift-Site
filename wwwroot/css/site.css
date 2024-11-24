@@ -1,5 +1,9 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+.logo-style {
+    height : 75px;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -123,7 +127,7 @@ app {
 }
 
 #logo {
-    width: 100%;
+    width: 70px;
     
 }
 
@@ -369,6 +373,10 @@ div.flex-label > a > span {
 @media (min-width: 768px) {
     app {
         flex-direction: row;
+    }
+
+    .logo-style {
+        height: 75px;
     }
 
     .sidebar {

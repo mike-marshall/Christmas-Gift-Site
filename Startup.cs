@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mobsites.Cosmos.Identity;
 using PolarExpress3.Areas.Identity;
+using PolarExpress3.Biz;
 using PolarExpress3.Data;
 using System;
 
@@ -74,8 +76,15 @@ namespace PolarExpress3
                 })
                 // Add other IdentityBuilder methods.
                 .AddDefaultUI()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders();            
 
+            services.AddAuthorization(config =>
+            {
+                services.AddScoped<IAuthorizationHandler, FamilyMembershipHandler>();
+
+                config.AddPolicy("HasFamily", policy =>
+                    policy.AddRequirements(new FamilyMemberRequirement()));
+            });
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
